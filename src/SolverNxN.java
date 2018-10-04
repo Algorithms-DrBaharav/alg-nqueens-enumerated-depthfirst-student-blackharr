@@ -17,10 +17,20 @@ public class SolverNxN {
     
     // Board representation
     private int N;
+    int[][] board;
+	int[][] numBlanked;
+	int[][] invalid;
+	int[] initQueen;
+	int[] lastQueen;
 
     // Initialize all to empty
     public SolverNxN(int n) {
         N=n;
+        resetBoards();
+		updateNumBlanks();
+		invalid = new int[N][N];
+		initQueen = new int[2];
+		lastQueen = new int[2];
     }
 
     /**
@@ -30,14 +40,128 @@ public class SolverNxN {
      * 
      */
     public int[][] solve() {
-        
-        // do something
-
-        // return a nice board
-        return b2board();
+        int queens;
+		int attempts = 1;
+		while (true) {
+			for (queens = 0; queens < N+1; queens++) {
+				if (isValidPosition()) {
+					placeQueen();
+					if (queens == 0) {
+						initQueen[0] = lastQueen[0];
+						initQueen[1] = lastQueen[1];
+					}
+					updateBoard();
+					updateNumBlanks();
+				} else
+					break;
+			}
+			cleanup();
+			printBoard(board);
+			System.out.println("Attempts: "+ attempts +", Queens: "+ queens);
+			if (queens == N) {
+				return cleanup();
+			}
+			resetBoards();
+			invalid[initQueen[0]][initQueen[1]] = 1;
+			attempts++;
+		}
     }
     
-    
+    private void placeQueen() {
+		int minx = 0;
+		int miny = 0;
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++) {
+				if (invalid[minx][miny] == 1 && invalid[i][j] != 1) {
+					minx = i;
+					miny = j;
+					continue;
+				}
+				boolean smallerValid = numBlanked[i][j] < numBlanked[minx][miny] || numBlanked[minx][miny] == -1;
+				if (invalid[i][j] != 1 && numBlanked[i][j] != -1 && smallerValid) {
+					minx = i;
+					miny = j;
+				}
+			}
+		board[minx][miny] = 1;
+		lastQueen[0] = minx;
+		lastQueen[1] = miny;
+	}
+	
+	private void updateBoard() {
+		int r = lastQueen[0];
+		int c = lastQueen[1];
+		for (int i = 0; i < N; i++) {
+			if (board[r][i] == 0)
+				board[r][i] = -1;
+			if (board[i][c] == 0)
+				board[i][c] = -1;
+		}
+		
+		for (int count = 1; r+count < N && c+count < N; count++)
+			board[r+count][c+count] = -1;
+		for (int count = 1; r-count >= 0 && c+count < N; count++)
+			board[r-count][c+count] = -1;
+		for (int count = 1; r+count < N && c-count >= 0; count++)
+			board[r+count][c-count] = -1;
+		for (int count = 1; r-count >= 0 && c-count >= 0; count++)
+			board[r-count][c-count] = -1;
+	}
+	
+	private void updateNumBlanks() {
+		for (int r = 0; r < N; r++)
+			for (int c = 0; c < N; c++) {
+				if (board[r][c] == -1 || board[r][c] == 1)
+					numBlanked[r][c] = -1;
+				else
+					updateTile(r, c);
+			}
+	}
+	
+	private void updateTile(int r, int c) {
+		int numBlankable = 0;
+		for (int i = 0; i < N; i++) {
+			if (i != c && board[r][i] == 0)
+				numBlankable++;
+			if (i != r && board[i][c] == 0)
+				numBlankable++;
+		}
+		
+		for (int count = 1; r+count < N && c+count < N; count++)
+			if (board[r+count][c+count] == 0)
+				numBlankable++;
+		for (int count = 1; r-count >= 0 && c+count < N; count++)
+			if (board[r-count][c+count] == 0)
+				numBlankable++;
+		for (int count = 1; r+count < N && c-count >= 0; count++)
+			if (board[r+count][c-count] == 0)
+				numBlankable++;
+		for (int count = 1; r-count >= 0 && c-count >= 0; count++)
+			if (board[r-count][c-count] == 0)
+				numBlankable++;
+		numBlanked[r][c] = numBlankable;
+	}
+	
+	private boolean isValidPosition() {
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++)
+				if (board[i][j] == 0)
+					return true;
+		return false;
+	}
+	
+	private void resetBoards() {
+		board = new int[N][N];
+		numBlanked = new int[N][N];
+	}
+	
+	private int[][] cleanup() {
+		for (int i = 0; i < N; i++)
+			for (int j = 0; j < N; j++)
+				if (board[i][j] == -1)
+					board[i][j] = 0;
+		return board;
+	}
     
     /*
     
