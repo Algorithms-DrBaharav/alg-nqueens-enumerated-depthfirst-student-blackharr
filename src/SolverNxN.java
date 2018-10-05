@@ -70,33 +70,29 @@ public class SolverNxN {
     private void placeQueen() {
 		int minx = 0;
 		int miny = 0;
+                boolean type = false;
 		for (int i = 0; i < N; i++)
 			for (int j = 0; j < N; j++) {
-				if (invalid[minx][miny] == 1 && invalid[i][j] != 1) {
+				if (invalid[minx][miny] == 1 && invalid[i][j] != 1 && board[i][j] != 1 && numBlanked[i][j] != -1) {
 					minx = i;
 					miny = j;
+                                        type = true;
 					continue;
 				}
 				boolean smallerValid = numBlanked[i][j] < numBlanked[minx][miny] || numBlanked[minx][miny] == -1;
 				if (invalid[i][j] != 1 && numBlanked[i][j] != -1 && smallerValid) {
 					minx = i;
 					miny = j;
-				}
+				} else if (invalid[i][j] != 1 && numBlanked[i][j] != -1 && type) {
+                                    minx = i;
+                                    miny = j;
+                                    type = false;
+                                }
 			}
 		board[minx][miny] = 1;
 		lastQueen[0] = minx;
 		lastQueen[1] = miny;
 	}
-	
-	private void updateBoard() {
-		int r = lastQueen[0];
-		int c = lastQueen[1];
-		for (int i = 0; i < N; i++) {
-			if (board[r][i] == 0)
-				board[r][i] = -1;
-			if (board[i][c] == 0)
-				board[i][c] = -1;
-		}
 		
 		for (int count = 1; r+count < N && c+count < N; count++)
 			board[r+count][c+count] = -1;
