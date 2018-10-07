@@ -93,6 +93,16 @@ public class SolverNxN {
 		lastQueen[0] = minx;
 		lastQueen[1] = miny;
 	}
+    
+    private void updateBoard() {
+		int r = lastQueen[0];
+		int c = lastQueen[1];
+		for (int i = 0; i < N; i++) {
+			if (board[r][i] == 0)
+				board[r][i] = -1;
+			if (board[i][c] == 0)
+				board[i][c] = -1;
+		}
 		
 		for (int count = 1; r+count < N && c+count < N; count++)
 			board[r+count][c+count] = -1;
